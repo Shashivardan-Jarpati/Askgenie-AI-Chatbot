@@ -487,19 +487,13 @@ with st.sidebar:
     max_tokens = st.slider("Max reply tokens", 20, 200, 50, 10)
 
     if response_style == "Fast":
-        max_new_tokens = 30
+        max_new_tokens = 80
     elif response_style == "Detailed":
-        max_new_tokens = 100
+        max_new_tokens = 160
     else:
-        max_new_tokens = 50
+        max_new_tokens = 100
 
     st.caption(f"Max new tokens this reply: {max_new_tokens}")
-
-    st.markdown("---")
-    st.markdown("### 📊 Session Analytics (Demo)")
-    st.text(f"User messages: {st.session_state.total_user_messages}")
-    st.text(f"Bot messages:  {st.session_state.total_bot_messages}")
-    st.text(f"Last intent:   {st.session_state.last_intent}")
 
     st.markdown("---")
     if st.button("🔁 Restart conversation"):
@@ -508,6 +502,12 @@ with st.sidebar:
         st.session_state.total_bot_messages = 0
         st.session_state.last_intent = "restart"
         st.rerun()
+
+    st.markdown("---")
+    st.markdown("### 📊 Session Analytics")
+    st.text(f"User messages: {st.session_state.total_user_messages}")
+    st.text(f"Bot messages:  {st.session_state.total_bot_messages}")
+    st.text(f"Last intent:   {st.session_state.last_intent}")
 
     st.markdown("---")
     st.markdown("### ABOUT")
