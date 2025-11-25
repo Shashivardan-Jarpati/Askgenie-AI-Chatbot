@@ -1,14 +1,14 @@
 import streamlit as st
 from transformers import pipeline
 import torch
-import re  # ADDED THIS
+import re
 
 # -------------------------------
 # Page config
 # -------------------------------
 st.set_page_config(page_title="AI Chatbot", page_icon="🤖", layout="wide")
 
-# ---------- NEW: custom background + chat styling ----------
+# ---------- FIXED: custom background + chat styling ----------
 st.markdown(
     """
     <style>
@@ -18,13 +18,70 @@ st.markdown(
         color: #e5e7eb;
     }
 
-    /* Main title and caption */
+    /* Main title and caption - FORCE WHITE TEXT */
     h1, h2, h3, h4, h5, h6 {
-        color: #f9fafb;
+        color: #ffffff !important;
     }
 
-    .stMarkdown, .stText, .stCaption, .stSidebar, .css-uvzfh0 {
-        color: #e5e7eb !important;
+    /* Force all text to be white/light */
+    .stMarkdown, .stText, .stCaption {
+        color: #ffffff !important;
+    }
+    
+    /* Sidebar text - FORCE WHITE */
+    .stSidebar {
+        background-color: #1e293b !important;
+    }
+    
+    .stSidebar * {
+        color: #ffffff !important;
+    }
+    
+    /* Sidebar headers */
+    .stSidebar h1, .stSidebar h2, .stSidebar h3, .stSidebar h4 {
+        color: #ffffff !important;
+    }
+    
+    /* Sidebar labels and text */
+    .stSidebar label, .stSidebar .stMarkdown, .stSidebar p {
+        color: #ffffff !important;
+    }
+    
+    /* Slider labels */
+    [data-testid="stSidebar"] label {
+        color: #ffffff !important;
+    }
+    
+    /* Sidebar header text - Session Analytics, etc */
+    .stSidebar .element-container {
+        color: #ffffff !important;
+    }
+    
+    /* Force all sidebar children to be white */
+    [data-testid="stSidebar"] div, 
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] p {
+        color: #ffffff !important;
+    }
+    
+    /* Top app header/toolbar */
+    header[data-testid="stHeader"] {
+        background-color: #1e293b !important;
+    }
+    
+    /* Main toolbar at top */
+    .main .block-container header {
+        color: #ffffff !important;
+    }
+    
+    /* Main content area text */
+    .main .block-container, .main .block-container * {
+        color: #ffffff !important;
+    }
+    
+    /* Caption specifically */
+    .main .element-container .stCaption {
+        color: #9ca3af !important;
     }
 
     /* Chat message container tweaks */
@@ -47,13 +104,116 @@ st.markdown(
         border-radius: 18px;
         padding: 0.5rem 0.75rem;
     }
+    
+    /* Chat message avatar styling - fix white background */
+    [data-testid="stChatMessageAvatarUser"],
+    [data-testid="stChatMessageAvatarAssistant"] {
+        background: rgba(30, 41, 59, 0.6) !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Spinner/loading text color */
+    .stSpinner > div {
+        border-color: rgba(100, 200, 255, 0.3) rgba(100, 200, 255, 0.3) rgba(100, 200, 255, 0.9) rgba(100, 200, 255, 0.3) !important;
+    }
+    
+    /* "Thinking..." text color - Make it more visible */
+    .stSpinner > div > div {
+        color: #60a5fa !important;
+    }
+    
+    /* Spinner container text */
+    [data-testid="stStatusWidget"] {
+        color: #60a5fa !important;
+    }
+    
+    /* All spinner related text */
+    .stSpinner, .stSpinner * {
+        color: #60a5fa !important;
+    }
 
-    /* Chat input background */
+    /* Chat input background - White rounded like ChatGPT */
     textarea {
-        background: rgba(15, 23, 42, 0.9) !important;
-        color: #e5e7eb !important;
-        border-radius: 999px !important;
-        border: 1px solid rgba(148, 163, 184, 0.6) !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-radius: 24px !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+        padding: 12px 20px !important;
+    }
+    
+    /* Chat input placeholder text */
+    textarea::placeholder {
+        color: #6b7280 !important;
+    }
+    
+    /* Chat input container - remove ALL white borders - FIXED */
+    [data-testid="stChatInput"], 
+    [data-testid="stChatInput"] > div,
+    [data-testid="stChatInput"] > div > div,
+    .stChatInputContainer,
+    .stChatInput > div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Bottom chat input wrapper - remove white background */
+    .main > div > div > div > div[data-testid="stBottom"],
+    [data-testid="stBottom"] > div {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+    
+    /* Target the white border container */
+    div[data-testid="InputInstructions"],
+    .stChatFloatingInputContainer {
+        background: transparent !important;
+        border: none !important;
+    }
+    
+    /* Remove any extra white space/padding around input */
+    [data-testid="stChatInput"] > div:first-child {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Fix the white overflow on edges */
+    [data-testid="stChatInput"] > div > div:first-child {
+        background: transparent !important;
+        overflow: hidden !important;
+        border-radius: 26px !important;
+    }
+    
+    /* Sidebar info/warning boxes - HIDE white background completely */
+    .stSidebar .stAlert {
+        background: rgba(30, 41, 59, 0.6) !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+        color: #ffffff !important;
+    }
+    
+    /* Info/Warning/Success boxes in sidebar */
+    .stSidebar [data-baseweb="notification"] {
+        background: rgba(30, 41, 59, 0.6) !important;
+        color: #ffffff !important;
+    }
+    
+    /* All alert children text white */
+    .stSidebar .stAlert * {
+        color: #ffffff !important;
+    }
+    
+    /* Sidebar button styling - make it dark */
+    .stSidebar button {
+        background-color: rgba(30, 41, 59, 0.6) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+    
+    .stSidebar button:hover {
+        background-color: rgba(30, 41, 59, 0.9) !important;
+        border-color: rgba(148, 163, 184, 0.5) !important;
     }
     </style>
     """,
@@ -119,7 +279,7 @@ ABOUT_TEXT = """
 """
 
 # -------------------------------
-# FORMATTING FIX FUNCTION - ADDED THIS
+# FORMATTING FIX FUNCTION
 # -------------------------------
 def clean_and_format_response(text: str) -> str:
     """
@@ -158,12 +318,12 @@ def clean_and_format_response(text: str) -> str:
     # Join sentences
     result = ' '.join(cleaned)
     
-    # Limit to 4 sentences max to prevent overly lengthy responses
+    # Limit to 2 sentences max
     final_sentences = re.split(r'[.!?]+\s*', result)
     final_sentences = [s.strip() for s in final_sentences if s.strip()]
     
-    if len(final_sentences) > 4:
-        final_sentences = final_sentences[:4]
+    if len(final_sentences) > 2:
+        final_sentences = final_sentences[:2]
     
     result = '. '.join(final_sentences)
     
@@ -171,14 +331,14 @@ def clean_and_format_response(text: str) -> str:
     if result and result[-1] not in '.!?':
         result += '.'
     
-    # Limit overall length to 500 characters
-    if len(result) > 500:
-        result = result[:500]
+    # Limit overall length to 200 characters
+    if len(result) > 200:
+        result = result[:200]
         last_period = result.rfind('.')
-        if last_period > 300:
+        if last_period > 100:
             result = result[:last_period+1]
         else:
-            result = result[:500].rstrip() + '...'
+            result = result[:200].rstrip() + '...'
     
     return result
 
@@ -324,14 +484,14 @@ with st.sidebar:
     temperature = st.slider("Temperature", 0.1, 1.5, 0.7, 0.05)
     top_p = st.slider("Top-p (nucleus sampling)", 0.1, 1.0, 0.9, 0.01)
 
-    max_tokens = st.slider("Max reply tokens", 30, 512, 160, 10)
+    max_tokens = st.slider("Max reply tokens", 20, 200, 50, 10)
 
     if response_style == "Fast":
-        max_new_tokens = max(40, max_tokens // 2)
+        max_new_tokens = 30
     elif response_style == "Detailed":
-        max_new_tokens = min(512, max_tokens * 2)
+        max_new_tokens = 100
     else:
-        max_new_tokens = max_tokens
+        max_new_tokens = 50
 
     st.caption(f"Max new tokens this reply: {max_new_tokens}")
 
@@ -350,10 +510,10 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.markdown("### ABOUT :")
+    st.markdown("### ABOUT")
     st.info(
         "You are chatting with a **local instruction-tuned AI bot** "
-        "based on Phi-3-mini-4k-instruct. It runs fully on your machine in this Chatbot."
+        "based on Phi-3-mini-4k-instruct. It runs fully on your machine in this demo."
     )
 
     st.markdown("### FIRST TIME SETUP")
@@ -385,7 +545,6 @@ with st.sidebar:
 # Show chat history
 # -------------------------------
 for message in st.session_state.messages:
-    # ---------- NEW: custom avatars ----------
     avatar = "🧑" if message["role"] == "user" else "🤖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
@@ -396,7 +555,6 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("What would you like to know? (type /help for options)"):
     st.session_state.total_user_messages += 1
 
-    # ---------- NEW: avatars on new messages ----------
     with st.chat_message("user", avatar="🧑"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -445,7 +603,6 @@ if prompt := st.chat_input("What would you like to know? (type /help for options
 
                         reply = raw[0]["generated_text"].strip()
                         
-                        # APPLY FORMATTING FIX - ADDED THIS LINE
                         reply = clean_and_format_response(reply)
 
                         if not reply or len(reply.split()) < 2:
